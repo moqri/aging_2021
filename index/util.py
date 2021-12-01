@@ -1,6 +1,8 @@
 import pandas as pd
 import pyBigWig
 from bisect import bisect_left
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 def take_closest(myList, myNumber):
     """
@@ -81,13 +83,7 @@ def get_cpg():
     man_='ftp://webdata2:webdata2@ussd-ftp.illumina.com/downloads/ProductFiles/HumanMethylation450/HumanMethylation450_15017482_v1-2.csv'
     cpg=pd.read_csv(man_,skiprows=7)
     return cpg
-def get_flank():  
-    df['ch']='chr'+df.index.str.split('_').str[0]
-    df['b']=df.index.str.split('_').str[1].astype(int)
-    df['b1']=df.b-1
-    df['b2']=df.b+3
-    df[['ch','b1','b2']].to_csv(data+'wg/flank_pos.bed',sep='\t',header=None,index=None)
-    #!bedtools getfasta -fi ref/hg38.fa.masked -bed wg/flank_pos.bed -fo wg/flank.fasta
+
 def hg382hg19():
     df=pd.read_csv('ezs.csv',index_col=0)
     df['ch']=df.index.str.split('_').str[0]
@@ -106,4 +102,41 @@ def rep():
     rep.shape
     rep['g']=rep.ch*10**9+rep[1]
     l=[list(range(g,g+1000)) for g in rep.g]
-    l = [item for sublist in l for item in sublist]    
+    l = [item for sublist in l for item in sublist] 
+    
+def fig(df,ezh,cell,label,pal):
+    pl=df[cell+['dq']].groupby('dq').mean()[cell]
+    pl.columns=label
+    pl.index=list(range(-2500,2501,500))
+    plt.figure()
+    ax=sns.lineplot(data=pl,dashes=False,hue_order=label[::-1],
+                    palette = sns.color_palette(pal))
+    plt.figure()
+    dl=df[df.h9<.2]
+    pl=dl.groupby('dq').mean()[cell]
+    pl.columns=label
+    pl.index=list(range(-2500,2501,500))
+    ax=sns.lineplot(data=pl,dashes=False,hue_order=label[::-1],
+                    palette = sns.color_palette(pal),legend=False)
+    plt.figure()
+    dle=dl[dl.tss.isin(ezh.g)].drop(['g','tss','d'],1)
+    print(dle.shape)
+    pl=dle.groupby('dq').mean()[cell]
+    pl.columns=label
+    pl.index=list(range(-2500,2501,500))
+    ax=sns.lineplot(data=pl,dashes=False,hue_order=label[::-1],
+                    palette = sns.color_palette(pal),legend=False)
+    plt.figure()
+    dh=df[df.h9>.6]
+    pl=dh.groupby('dq').mean()[cell]
+    pl.columns=label
+    pl.index=list(range(-2500,2501,500))
+    ax=sns.lineplot(data=pl,dashes=False,hue_order=label[::-1],
+                    palette = sns.color_palette(pal),legend=False)
+    plt.figure()
+    dho=dh[dh.flank.str[0].isin(['A','T'])&dh.flank.str[3].isin(['A','T'])].drop(['g','tss','d'],1)
+    pl=dho.groupby('dq').mean()[cell]
+    pl.columns=label
+    pl.index=list(range(-2500,2501,500))
+    ax=sns.lineplot(data=pl,dashes=False,hue_order=label[::-1],
+                    palette = sns.color_palette(pal),legend=False)    
