@@ -58,8 +58,8 @@ def run_etl():
     for i in range(6):
         dg=dfs[0]
         for df in dfs[1:]:
-            dg=dg.merge(df.drop(['g','tss','d','dq'],1),left_index=True,right_index=True,how='left')
-        dg.drop(['g','tss','d'],1).mean().plot(kind='bar')     
+            dg=dg.merge(df.drop(['g','tss','d','dq'],axis=1),left_index=True,right_index=True,how='left')
+        dg.drop(['g','tss','d'],axis=1).mean().plot(kind='bar')     
 def merge_dfs():
     dfs=[]
     cells=['h9','ips','nb','ct','sy','so']
@@ -104,39 +104,5 @@ def rep():
     l=[list(range(g,g+1000)) for g in rep.g]
     l = [item for sublist in l for item in sublist] 
     
-def fig(df,ezh,cell,label,pal):
-    pl=df[cell+['dq']].groupby('dq').mean()[cell]
-    pl.columns=label
-    pl.index=list(range(-2500,2501,500))
-    plt.figure()
-    ax=sns.lineplot(data=pl,dashes=False,hue_order=label[::-1],
-                    palette = sns.color_palette(pal))
-    plt.figure()
-    dl=df[df.h9<.2]
-    pl=dl.groupby('dq').mean()[cell]
-    pl.columns=label
-    pl.index=list(range(-2500,2501,500))
-    ax=sns.lineplot(data=pl,dashes=False,hue_order=label[::-1],
-                    palette = sns.color_palette(pal),legend=False)
-    plt.figure()
-    dle=dl[dl.tss.isin(ezh.g)].drop(['g','tss','d'],1)
-    print(dle.shape)
-    pl=dle.groupby('dq').mean()[cell]
-    pl.columns=label
-    pl.index=list(range(-2500,2501,500))
-    ax=sns.lineplot(data=pl,dashes=False,hue_order=label[::-1],
-                    palette = sns.color_palette(pal),legend=False)
-    plt.figure()
-    dh=df[df.h9>.6]
-    pl=dh.groupby('dq').mean()[cell]
-    pl.columns=label
-    pl.index=list(range(-2500,2501,500))
-    ax=sns.lineplot(data=pl,dashes=False,hue_order=label[::-1],
-                    palette = sns.color_palette(pal),legend=False)
-    plt.figure()
-    dho=dh[dh.flank.str[0].isin(['A','T'])&dh.flank.str[3].isin(['A','T'])].drop(['g','tss','d'],1)
-    pl=dho.groupby('dq').mean()[cell]
-    pl.columns=label
-    pl.index=list(range(-2500,2501,500))
-    ax=sns.lineplot(data=pl,dashes=False,hue_order=label[::-1],
-                    palette = sns.color_palette(pal),legend=False)    
+
+    

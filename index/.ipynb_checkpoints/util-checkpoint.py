@@ -58,8 +58,8 @@ def run_etl():
     for i in range(6):
         dg=dfs[0]
         for df in dfs[1:]:
-            dg=dg.merge(df.drop(['g','tss','d','dq'],1),left_index=True,right_index=True,how='left')
-        dg.drop(['g','tss','d'],1).mean().plot(kind='bar')     
+            dg=dg.merge(df.drop(['g','tss','d','dq'],axis=1),left_index=True,right_index=True,how='left')
+        dg.drop(['g','tss','d'],axis=1).mean().plot(kind='bar')     
 def merge_dfs():
     dfs=[]
     cells=['h9','ips','nb','ct','sy','so']
@@ -84,7 +84,6 @@ def get_cpg():
     cpg=pd.read_csv(man_,skiprows=7)
     return cpg
 
-    #!bedtools getfasta -fi ref/hg38.fa.masked -bed wg/flank_pos.bed -fo wg/flank.fasta
 def hg382hg19():
     df=pd.read_csv('ezs.csv',index_col=0)
     df['ch']=df.index.str.split('_').str[0]
@@ -105,7 +104,10 @@ def rep():
     l=[list(range(g,g+1000)) for g in rep.g]
     l = [item for sublist in l for item in sublist] 
     
-def fig(df,ezh,cell,label,pal):
+
+    
+def get_fig(df,cell,label,pal):
+    sns.set(rc={'figure.figsize':(3.5,2.5)})
     pl=df[cell+['dq']].groupby('dq').mean()[cell]
     pl.columns=label
     pl.index=list(range(-2500,2501,500))
@@ -120,7 +122,7 @@ def fig(df,ezh,cell,label,pal):
     ax=sns.lineplot(data=pl,dashes=False,hue_order=label[::-1],
                     palette = sns.color_palette(pal),legend=False)
     plt.figure()
-    dle=dl[dl.tss.isin(ezh.g)].drop(['g','tss','d'],1)
+    dle=dl[dl.ezh.notna()].drop(['g','tss','d'],axis=1)
     print(dle.shape)
     pl=dle.groupby('dq').mean()[cell]
     pl.columns=label
@@ -135,7 +137,7 @@ def fig(df,ezh,cell,label,pal):
     ax=sns.lineplot(data=pl,dashes=False,hue_order=label[::-1],
                     palette = sns.color_palette(pal),legend=False)
     plt.figure()
-    dho=dh[dh.flank.str[0].isin(['A','T'])&dh.flank.str[3].isin(['A','T'])].drop(['g','tss','d'],1)
+    dho=dh[dh.flank.str[0].isin(['A','T'])&dh.flank.str[3].isin(['A','T'])].drop(['g','tss','d'],axis=1)
     pl=dho.groupby('dq').mean()[cell]
     pl.columns=label
     pl.index=list(range(-2500,2501,500))
